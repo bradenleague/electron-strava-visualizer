@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Strava Electron App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Strava Electron App</h1>
+    
+    <div id="auth-section">
+      <button id="auth-button" class="btn">Connect with Strava</button>
+    </div>
+    
+    <div id="activities-section" class="hidden">
+      <h2>Your Recent Activities</h2>
+      <button id="refresh-button" class="btn">Refresh Activities</button>
+      <div id="activities-list"></div>
+    </div>
+    
+    <div id="loading" class="hidden">Loading...</div>
+    <div id="error" class="hidden"></div>
+  </div>
+  
+  <script src="renderer.js"></script>
+</body>
+</html> 

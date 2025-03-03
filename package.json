@@ -1,0 +1,22 @@
+{
+  "name": "strava-electron-app",
+  "version": "1.0.0",
+  "description": "Electron app with Strava OAuth integration",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "strava",
+    "oauth"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "electron": "^26.2.0",
+    "electron-store": "^8.1.0"
+  }
+} 
