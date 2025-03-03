@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Electron app with Strava OAuth integration",
   "main": "dist-electron/main.js",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "build:electron": "electron-builder --dir",
+  "dist": "vite build && electron-builder"
+},
   "keywords": [
     "electron",
     "strava",
@@ -25,10 +27,10 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "electron": "^26.2.0",
-    "electron-builder": "^24.9.1",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.0.10",
     "vite-plugin-electron": "^0.12.0",
     "vite-plugin-electron-renderer": "^0.14.5",
-    "vite": "^5.0.10",
     "wait-on": "^7.2.0"
   },
   "build": {

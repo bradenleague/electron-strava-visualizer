@@ -128,3 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Vite build output
+dist/
+
+# Electron build output
+dist-electron/
+
+# Electron packaged apps
+release/
