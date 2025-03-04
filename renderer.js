@@ -1,8 +1,11 @@
 // Direct ESM import for Three.js
 import * as THREE from 'three';
+// Import our new visualization module
+import { ActivityVisualizer } from './visualization.js';
 
-// Initialize variables for Three.js
-let scene, camera, renderer, cube;
+// Initialize variables
+let visualizer = null;
+let useMetricUnits = false; // Default to imperial (miles)
 
 document.addEventListener('DOMContentLoaded', () => {
   const authButton = document.getElementById('auth-button');
@@ -211,8 +214,83 @@ document.addEventListener('DOMContentLoaded', () => {
     // Make the visualization panel visible
     visualizationPanel.classList.add('active');
     
-    // Create a visualization based on activity data
-    updateVisualization(activity);
+    // Create a visualization based on activity data using our new module
+    const activityInfo = visualizer.visualizeActivity(activity);
+    
+    // Update information text
+    const infoContainer = document.getElementById('visualization-info');
+    if (infoContainer) {
+      // Calculate values based on user's unit preference
+      const distanceValue = useMetricUnits ? 
+        activity.distance / 1000 : // kilometers
+        activity.distance / 1609.34; // miles
+      
+      const distanceUnit = useMetricUnits ? 'km' : 'mi';
+      const elevationUnit = useMetricUnits ? 'm' : 'ft';
+      
+      // Calculate pace (minutes per mile/km)
+      const paceSeconds = activity.moving_time / (useMetricUnits ? 
+        (activity.distance / 1000) : // seconds per km
+        (activity.distance / 1609.34)); // seconds per mile
+      const paceMinutes = Math.floor(paceSeconds / 60);
+      const paceRemainingSeconds = Math.floor(paceSeconds % 60);
+      const paceFormatted = `${paceMinutes}:${paceRemainingSeconds.toString().padStart(2, '0')}`;
+      
+      // Format elevation if available
+      let elevationInfo = '';
+      if (activity.total_elevation_gain) {
+        const elevationValue = useMetricUnits ? 
+          activity.total_elevation_gain : // meters
+          activity.total_elevation_gain * 3.28084; // feet
+        elevationInfo = `<p>Elevation Gain: ${elevationValue.toFixed(0)} ${elevationUnit}</p>`;
+      }
+      
+      // Format heart rate if available
+      let heartRateInfo = '';
+      if (activity.average_heartrate) {
+        heartRateInfo = `<p>Avg Heart Rate: ${Math.round(activity.average_heartrate)} bpm</p>`;
+      }
+      
+      // Format date
+      const activityDate = new Date(activity.start_date);
+      const dateFormatted = activityDate.toLocaleDateString();
+      const timeFormatted = activityDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      const activityInfoEl = document.createElement('div');
+      activityInfoEl.className = 'activity-info';
+      activityInfoEl.innerHTML = `
+        <div class="activity-header">
+          <h3>${activity.name}</h3>
+          <div class="units-toggle">
+            <label>
+              <input type="checkbox" id="units-toggle" ${useMetricUnits ? 'checked' : ''}>
+              Use Metric (km)
+            </label>
+          </div>
+        </div>
+        <div class="activity-stats">
+          <p><strong>Type:</strong> ${activity.type}</p>
+          <p><strong>Date:</strong> ${dateFormatted} at ${timeFormatted}</p>
+          <p><strong>Distance:</strong> ${distanceValue.toFixed(2)} ${distanceUnit}</p>
+          <p><strong>Duration:</strong> ${formatDuration(activity.moving_time)}</p>
+          <p><strong>Pace:</strong> ${paceFormatted} min/${distanceUnit}</p>
+          ${elevationInfo}
+          ${heartRateInfo}
+        </div>
+        <div class="visualization-explanation">
+          <p><small>3D shape based on activity type. Size represents distance, complexity represents duration.</small></p>
+        </div>
+      `;
+      
+      infoContainer.innerHTML = '';
+      infoContainer.appendChild(activityInfoEl);
+      
+      // Add event listener to the units toggle
+      document.getElementById('units-toggle').addEventListener('change', (e) => {
+        useMetricUnits = e.target.checked;
+        visualizeActivity(activity); // Redisplay with new units
+      });
+    }
     
     // Apply animations
     applyAnimations();
@@ -222,6 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeunload', () => {
     if (removeOAuthListener) {
       removeOAuthListener();
+    }
+    
+    // Clean up visualizer
+    if (visualizer) {
+      visualizer.dispose();
     }
   });
 });
@@ -248,198 +331,9 @@ function createVisualizationPanel() {
   // Add to app container
   document.getElementById('app-container').appendChild(visualizationPanel);
   
-  // Initialize Three.js in the new container
-  initThreeJSInContainer();
-}
-
-// Move Three.js initialization to a separate function that's called after panel creation
-function initThreeJSInContainer() {
-  try {
-    // Create a scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
-    
-    // Create a camera
-    camera = new THREE.PerspectiveCamera(
-      75, 
-      1, // Initial aspect ratio (will be updated)
-      0.1, 
-      1000
-    );
-    camera.position.z = 5;
-    
-    // Create a renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(300, 300); // Initial size (will be updated)
-    
-    // Add the renderer to the DOM
-    const container = document.getElementById('three-container');
-    if (container) {
-      container.appendChild(renderer.domElement);
-      
-      // Update renderer size based on container
-      updateRendererSize();
-    }
-    
-    // Create a default cube
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ 
-      color: 0xfc4c02, // Strava orange
-      roughness: 0.5,
-      metalness: 0.2
-    });
-    cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    
-    // Add some ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-    
-    // Add a directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(1, 1, 1);
-    scene.add(directionalLight);
-    
-    // Handle window resize
-    window.addEventListener('resize', updateRendererSize);
-    
-    // Animation loop
-    function animate() {
-      requestAnimationFrame(animate);
-      
-      if (cube) {
-        // Rotate the cube
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-      }
-      
-      renderer.render(scene, camera);
-    }
-    
-    animate();
-    
-  } catch (error) {
-    console.error('Error initializing Three.js:', error);
-  }
-}
-
-// Update renderer size based on container
-function updateRendererSize() {
-  const container = document.getElementById('three-container');
-  if (container && renderer) {
-    const width = container.clientWidth;
-    const height = container.clientHeight || width; // Square if height not specified
-    
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  }
-}
-
-// Function to update visualization based on activity data
-function updateVisualization(activity) {
-  // Clear any existing visualization (except the cube)
-  scene.children.forEach(child => {
-    if (child !== cube && !(child instanceof THREE.Light)) {
-      scene.remove(child);
-    }
-  });
-  
-  // Remove the default cube from the scene
-  if (cube) {
-    scene.remove(cube);
-  }
-  
-  // Normalize activity metrics
-  const distance = activity.distance / 1000; // km
-  const duration = activity.moving_time / 60; // minutes
-  
-  // Calculate size based on distance (capped between 0.5 and 3)
-  const size = Math.min(Math.max(distance / 10, 0.5), 3);
-  
-  // Calculate color based on activity type
-  let color;
-  switch (activity.type) {
-    case 'Run':
-      color = 0xff4500; // OrangeRed
-      break;
-    case 'Ride':
-      color = 0x1e90ff; // DodgerBlue
-      break;
-    case 'Swim':
-      color = 0x00bfff; // DeepSkyBlue
-      break;
-    default:
-      color = 0x9370db; // MediumPurple
-  }
-  
-  // Calculate complexity (number of segments) based on duration
-  const segments = Math.min(Math.max(Math.floor(duration / 5), 3), 16);
-  
-  // Create a geometry based on activity type
-  let geometry;
-  let mesh;
-  
-  if (activity.type === 'Run') {
-    // Use a torus for running
-    geometry = new THREE.TorusGeometry(size, size/3, segments, segments * 2);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ 
-      color: color,
-      roughness: 0.5,
-      metalness: 0.2
-    }));
-  } else if (activity.type === 'Ride') {
-    // Use an icosahedron for cycling
-    geometry = new THREE.IcosahedronGeometry(size, Math.floor(segments/4));
-    mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ 
-      color: color,
-      roughness: 0.3,
-      metalness: 0.5
-    }));
-  } else if (activity.type === 'Swim') {
-    // Use a torus knot for swimming
-    geometry = new THREE.TorusKnotGeometry(size, size/4, segments * 2, segments);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ 
-      color: color,
-      roughness: 0.1,
-      metalness: 0.8
-    }));
-  } else {
-    // Default to dodecahedron for other activities
-    geometry = new THREE.DodecahedronGeometry(size, Math.floor(segments/4));
-    mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ 
-      color: color,
-      roughness: 0.4,
-      metalness: 0.3
-    }));
-  }
-  
-  // Add to scene
-  scene.add(mesh);
-  
-  // Store reference to replace the cube
-  cube = mesh;
-  
-  // Reset camera position
-  camera.position.z = size * 2 + 3;
-  
-  // Update information text
-  const activityInfo = document.createElement('div');
-  activityInfo.className = 'activity-info';
-  activityInfo.innerHTML = `
-    <h3>3D Visualization: ${activity.name}</h3>
-    <p>Shape is based on activity type. Size is based on distance (${distance.toFixed(2)} km).</p>
-    <p>Complexity is based on duration (${duration.toFixed(0)} minutes).</p>
-  `;
-  
-  const infoContainer = document.getElementById('visualization-info');
-  if (infoContainer) {
-    infoContainer.innerHTML = '';
-    infoContainer.appendChild(activityInfo);
-  }
-  
-  // Update renderer size
-  updateRendererSize();
+  // Initialize our visualizer with the container ID
+  visualizer = new ActivityVisualizer('three-container');
+  visualizer.initialize();
 }
 
 // Enable HMR (Hot Module Replacement)
