@@ -9,6 +9,7 @@
   ],
   "env": {
     "VITE_STRAVA_CLIENT_ID": "@strava_client_id",
-    "VITE_STRAVA_CLIENT_SECRET": "@strava_client_secret"
+    "VITE_STRAVA_CLIENT_SECRET": "@strava_client_secret",
+    "DEPLOYMENT_TYPE": "web"
   }
 } 

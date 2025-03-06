@@ -5,8 +5,11 @@ const TOKEN_STORAGE_KEY = 'strava_tokens';
 const isDevelopment = window.location.hostname === 'localhost' || 
                       window.location.hostname === '127.0.0.1';
 
-// Base URL for API requests
-const API_BASE_URL = isDevelopment ? '/api' : '/api';
+// Check if we're in a web deployment
+const isWebDeployment = process.env.DEPLOYMENT_TYPE === 'web';
+
+// Base URL for API requests - always use /api for Vercel deployments
+const API_BASE_URL = '/api';
 
 export const authService = {
   // Get stored tokens
@@ -43,7 +46,8 @@ export const authService = {
   // Start OAuth flow
   authenticate() {
     const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
-    const redirectUri = window.location.origin + '/callback';
+    // Use the appropriate redirect URI based on deployment type
+    const redirectUri = window.location.origin + '/callback.html';
     const scope = 'read,activity:read';
     
     const authUrl = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;

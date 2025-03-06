@@ -1,8 +1,7 @@
 #!/bin/bash
-echo "Installing dependencies..."
-npm install
 
-echo "Building the application..."
+# Build for web deployment (Vercel)
+echo "Building for web deployment..."
 npm run vercel-build
 
-echo "Build completed!" 
+echo "Build completed successfully!" 

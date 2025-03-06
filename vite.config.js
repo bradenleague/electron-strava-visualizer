@@ -4,7 +4,8 @@ import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
 
 // Check if we're building for web (Vercel) or desktop (Electron)
-const isWeb = process.env.NODE_ENV === 'production' && process.argv.includes('--mode') && process.argv.includes('web');
+const isWeb = process.env.DEPLOYMENT_TYPE === 'web' || 
+              (process.env.NODE_ENV === 'production' && process.argv.includes('--mode') && process.argv.includes('web'));
 
 export default defineConfig({
   plugins: isWeb 
@@ -53,4 +54,7 @@ export default defineConfig({
   optimizeDeps: {
     include: ['three'],
   },
+  define: {
+    'process.env.DEPLOYMENT_TYPE': JSON.stringify(isWeb ? 'web' : 'electron')
+  }
 }); 

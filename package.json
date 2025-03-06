@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "Electron app with Strava OAuth integration",
   "main": "dist-electron/main.js",
-"scripts": {
-  "dev": "concurrently \"vite\" \"node dev-server.js\"",
-  "build": "vite build",
-  "preview": "vite preview",
-  "build:electron": "electron-builder --dir",
-  "dist": "vite build && electron-builder",
-  "vercel-build": "vite build --mode web"
-},
+  "scripts": {
+    "dev": "concurrently \"vite\" \"node dev-server.js\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:electron": "electron-builder --dir",
+    "dist": "vite build && electron-builder",
+    "vercel-build": "cross-env DEPLOYMENT_TYPE=web vite build --mode web"
+  },
   "keywords": [
     "electron",
     "strava",
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "electron": "^26.2.0",
     "electron-builder": "^24.13.3",
     "vite": "^5.0.10",

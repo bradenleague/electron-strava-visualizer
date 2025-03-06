@@ -7,6 +7,8 @@ import { authService } from './services/auth.js';
 
 // Check if we're running in Electron or web browser
 const isElectron = window && window.process && window.process.type;
+// Also check if we're in a web deployment
+const isWebDeployment = process.env.DEPLOYMENT_TYPE === 'web';
 
 // Initialize variables
 let visualizer = null;
@@ -18,6 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const activitiesContainer = document.getElementById('activities-container');
   const activitiesList = document.getElementById('activities-list');
   const appContainer = document.getElementById('app-container');
+  
+  // Update the app title based on environment
+  const appTitle = document.querySelector('.app-header h1');
+  if (appTitle) {
+    appTitle.textContent = isWebDeployment ? 'Strava Web Visualizer' : 'Strava Electron App';
+  }
   
   // Add pagination controls
   const paginationContainer = document.createElement('div');

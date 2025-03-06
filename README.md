@@ -1,118 +1,91 @@
-# Strava Activity Visualizer
+# Strava Electron Visualizer
 
-A desktop application that connects to Strava and creates 3D visualizations of your activities using Three.js and Electron.
+A dual-purpose application that works both as an Electron desktop app and as a web application deployable to Vercel.
 
 ## Features
 
-- OAuth2 authentication with Strava
-- Fetch and display your recent activities
-- Create 3D visualizations of activities
-- Interactive 3D controls (rotate, zoom, pan)
-- Support for different activity types (Run, Ride, Swim, etc.)
-- Route visualization with elevation data
-- Metric/Imperial unit toggle
-- Post-processing effects (bloom, outline, anti-aliasing)
-
-## Prerequisites
-
-- Node.js (v14 or higher)
-- npm (Node Package Manager)
-- A Strava API application (for client ID and secret)
-
-## Setup
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd strava-electron-app
-   ```
-
-2. Install dependencies:
-   ```
-   npm install
-   ```
-
-3. Create a `.env` file in the root directory with your Strava API credentials:
-   ```
-   NODE_ENV=development
-   VITE_STRAVA_CLIENT_ID=your_client_id
-   VITE_STRAVA_CLIENT_SECRET=your_client_secret
-   ```
-
-   Replace `your_client_id` and `your_client_secret` with your actual Strava API credentials from https://www.strava.com/settings/api
+- Connect with Strava using OAuth
+- View your Strava activities
+- Visualize your activities in 3D
+- Works both as a desktop app and a web app
 
 ## Development
 
-To run the app in development mode: 
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+npm install
 ```
+
+3. Create a `.env` file with your Strava API credentials:
+
+```
+VITE_STRAVA_CLIENT_ID=your_client_id
+VITE_STRAVA_CLIENT_SECRET=your_client_secret
+```
+
+### Running in Development Mode
+
+To run the application in development mode:
+
+```bash
 npm run dev
 ```
 
-This will start both the Vite dev server and Electron app.
-
-## Development with API Server
-
-For local development, the application uses a development server to handle API requests. This server is automatically started when you run `npm run dev`.
-
-If you need to run the development server separately, you can use:
-
-```
-node dev-server.js
-```
-
-The development server runs on port 3000 and handles the following endpoints:
-
-- `/auth` - Handles OAuth authentication
-- `/refresh` - Refreshes access tokens
-- `/activities` - Fetches activities from Strava
-
-These endpoints are proxied through the Vite development server, so in your code, you can use `/api/auth`, `/api/refresh`, and `/api/activities`.
+This will start both the Vite development server and the API server.
 
 ## Building
 
-To build the application:
-```
+### Building for Electron (Desktop)
+
+To build the application for desktop:
+
+```bash
 npm run dist
 ```
 
 This will create a distributable package in the `release` directory.
 
-## Deploying to Vercel
+### Building for Web (Vercel)
 
-This application can be deployed to Vercel by following these steps:
+To build the application for web deployment:
 
-1. Make sure you have the Vercel CLI installed:
-   ```
-   npm install -g vercel
-   ```
+```bash
+npm run vercel-build
+```
 
-2. Login to Vercel:
-   ```
-   vercel login
-   ```
+This will create a web-optimized build in the `dist` directory.
 
-3. Deploy the application:
-   ```
-   vercel
-   ```
+## Deployment
 
-4. For production deployment:
-   ```
-   vercel --prod
-   ```
+### Deploying to Vercel
 
-### Environment Variables
+1. Connect your GitHub repository to Vercel
+2. Set the following environment variables in Vercel:
+   - `VITE_STRAVA_CLIENT_ID`: Your Strava Client ID
+   - `VITE_STRAVA_CLIENT_SECRET`: Your Strava Client Secret
+   - `DEPLOYMENT_TYPE`: Set to `web`
+3. Deploy the application
 
-Make sure to set the following environment variables in your Vercel project settings:
+### Vercel Configuration
 
-- `VITE_STRAVA_CLIENT_ID`: Your Strava API client ID
-- `VITE_STRAVA_CLIENT_SECRET`: Your Strava API client secret
+The application uses the following Vercel configuration:
 
-### Important Notes for Vercel Deployment
+- Build Command: `npm run vercel-build`
+- Output Directory: `dist`
+- Environment Variables: See above
 
-- The application will run in web-only mode on Vercel (no Electron features)
-- Make sure your Strava API application has the correct redirect URI set (your-vercel-domain.vercel.app/callback)
-- The web version has the same functionality as the Electron app except for any native desktop features
+## License
+
+ISC
 
 ## Project Structure
 

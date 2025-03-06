@@ -1,0 +1,15 @@
+# Electron-specific files
+dist-electron/
+release/
+electron.js
+main.js
+preload.js
+
+# Development files
+node_modules/
+.git/
+.gitignore
+.gitattributes
+
+# Build artifacts that will be regenerated
+dist/ 
