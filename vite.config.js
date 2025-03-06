@@ -27,6 +27,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        callback: resolve(__dirname, 'callback.html')
       },
     },
   },
@@ -36,6 +37,13 @@ export default defineConfig({
     hmr: {
       overlay: true,
     },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   optimizeDeps: {
     include: ['three'],

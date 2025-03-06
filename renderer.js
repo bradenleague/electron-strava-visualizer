@@ -1,7 +1,9 @@
 // Direct ESM import for Three.js
 import * as THREE from 'three';
-// Import our new visualization module
+// Import our visualization module
 import { ActivityVisualizer } from './visualization.js';
+// Import the auth service
+import { authService } from './services/auth.js';
 
 // Initialize variables
 let visualizer = null;
@@ -24,41 +26,25 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentPage = 1;
   const activitiesPerPage = 5;
   
-  // Don't add two-column layout or create visualization panel yet
-  // We'll do that after authentication
-  
-  // Rename button to "Refresh Activities"
-  refreshButton.textContent = 'Refresh Activities';
-  refreshButton.style.display = 'none';
-  
-  // Set up listener for OAuth callback
-  const removeOAuthListener = window.stravaAPI.onOAuthCallbackReceived((data) => {
-    if (data.success) {
-      // Hide auth button, show refresh button
-      authButton.style.display = 'none';
-      refreshButton.style.display = 'inline-block';
-      
-      // Create visualization panel
-      createVisualizationPanel();
-      
-      // Apply two-column layout
-      appContainer.classList.add('two-column-layout');
-      
-      // Automatically fetch activities
-      fetchActivities();
-    } else {
-      console.error('Authentication failed:', data.error);
-    }
-  });
+  // Check if user is already authenticated
+  if (authService.isAuthenticated()) {
+    // Hide auth button, show refresh button
+    authButton.style.display = 'none';
+    refreshButton.style.display = 'inline-block';
+    
+    // Create visualization panel
+    createVisualizationPanel();
+    
+    // Apply two-column layout
+    appContainer.classList.add('two-column-layout');
+    
+    // Automatically fetch activities
+    fetchActivities();
+  }
   
   // Auth button click handler
-  authButton.addEventListener('click', async () => {
-    try {
-      await window.stravaAPI.authenticate();
-      // Note: We don't need to do anything here as the OAuth callback will handle the rest
-    } catch (error) {
-      console.error('Authentication error:', error);
-    }
+  authButton.addEventListener('click', () => {
+    authService.authenticate();
   });
   
   // Refresh activities button click handler
@@ -74,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       activitiesList.innerHTML = '';
       activitiesList.appendChild(loadingIndicator);
       
-      const result = await window.stravaAPI.getActivities();
+      const result = await authService.getActivities();
       if (result.success) {
         // Store all activities and display first page
         allActivities = result.activities;
@@ -298,10 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Clean up event listener when window is closed
   window.addEventListener('beforeunload', () => {
-    if (removeOAuthListener) {
-      removeOAuthListener();
-    }
-    
     // Clean up visualizer
     if (visualizer) {
       visualizer.dispose();
