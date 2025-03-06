@@ -5,6 +5,9 @@ import { ActivityVisualizer } from './visualization.js';
 // Import the auth service
 import { authService } from './services/auth.js';
 
+// Check if we're running in Electron or web browser
+const isElectron = window && window.process && window.process.type;
+
 // Initialize variables
 let visualizer = null;
 let useMetricUnits = false; // Default to imperial (miles)

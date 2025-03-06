@@ -9,7 +9,7 @@
   "preview": "vite preview",
   "build:electron": "electron-builder --dir",
   "dist": "vite build && electron-builder",
-  "vercel-build": "vite build"
+  "vercel-build": "vite build --mode web"
 },
   "keywords": [
     "electron",

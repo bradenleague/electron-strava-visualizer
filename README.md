@@ -79,26 +79,40 @@ This will create a distributable package in the `release` directory.
 
 ## Deploying to Vercel
 
-1. Create a Vercel account if you don't have one already.
+This application can be deployed to Vercel by following these steps:
 
-2. Install the Vercel CLI:
+1. Make sure you have the Vercel CLI installed:
    ```
    npm install -g vercel
    ```
 
-3. Login to Vercel:
+2. Login to Vercel:
    ```
    vercel login
    ```
 
-4. Deploy the application:
+3. Deploy the application:
    ```
    vercel
    ```
 
-5. Set up environment variables in the Vercel dashboard:
-   - `VITE_STRAVA_CLIENT_ID`: Your Strava Client ID
-   - `VITE_STRAVA_CLIENT_SECRET`: Your Strava Client Secret
+4. For production deployment:
+   ```
+   vercel --prod
+   ```
+
+### Environment Variables
+
+Make sure to set the following environment variables in your Vercel project settings:
+
+- `VITE_STRAVA_CLIENT_ID`: Your Strava API client ID
+- `VITE_STRAVA_CLIENT_SECRET`: Your Strava API client secret
+
+### Important Notes for Vercel Deployment
+
+- The application will run in web-only mode on Vercel (no Electron features)
+- Make sure your Strava API application has the correct redirect URI set (your-vercel-domain.vercel.app/callback)
+- The web version has the same functionality as the Electron app except for any native desktop features
 
 ## Project Structure
 
